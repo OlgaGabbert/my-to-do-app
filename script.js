@@ -2,41 +2,55 @@ const taskInput = document.getElementById("task");
 const taskList = document.getElementById("task-list");
 let tasks = [];
 
+// Load tasks from localStorage
 if (localStorage.getItem("tasks")) {
     tasks = JSON.parse(localStorage.getItem("tasks"));
-    tasks.forEach(taskText => {
-        createTaskElement(taskText);
+    tasks.forEach(taskData => {
+        createTaskElement(taskData.task, taskData.completed);
     });
 }
 
-function createTaskElement(taskText) {
+function createTaskElement(taskText, completed = false) {
     const taskItem = document.createElement("li");
     taskItem.textContent = taskText;
 
+    if (completed) {
+        taskItem.classList.add("completed");
+    }
+
     const deleteButton = document.createElement("button");
-    deleteButton.textContent = "Delete";
+    deleteButton.textContent = "x";
     deleteButton.className = "delete-button";
 
     taskItem.appendChild(deleteButton);
 
     deleteButton.addEventListener("click", () => {
         taskList.removeChild(taskItem);
-        tasks = tasks.filter(task => task !== taskText);
+        tasks = tasks.filter(taskData => taskData.task !== taskText);
         saveTasks();
     });
 
     taskItem.addEventListener("click", () => {
         taskItem.classList.toggle("completed");
-        saveTasks();
+        toggleTaskCompletion(taskText, taskItem.classList.contains("completed"));
     });
 
     taskList.appendChild(taskItem);
 }
 
+function toggleTaskCompletion(taskText, completed) {
+    tasks = tasks.map(taskData => {
+        if (taskData.task === taskText) {
+            return { task: taskText, completed };
+        }
+        return taskData;
+    });
+    saveTasks();
+}
+
 function saveTasks() {
-    const taskElements = document.querySelectorAll("#task-list li");
-    const taskTexts = Array.from(taskElements).map(task => task.textContent);
-    localStorage.setItem("tasks", JSON.stringify(taskTexts));
+    const taskTexts = tasks.map(taskData => taskData.task);
+    localStorage.setItem("tasks", JSON.stringify(tasks));
 }
 
 document.getElementById("add-task").addEventListener("click", () => {
@@ -44,8 +58,9 @@ document.getElementById("add-task").addEventListener("click", () => {
     if (taskText === "") return;
 
     createTaskElement(taskText);
-    tasks.push(taskText);
+    tasks.push({ task: taskText, completed: false });
     saveTasks();
 
     taskInput.value = "";
 });
+

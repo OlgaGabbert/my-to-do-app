@@ -2,7 +2,6 @@ const taskInput = document.getElementById("task");
 const taskList = document.getElementById("task-list");
 let tasks = [];
 
-// Load tasks from localStorage
 if (localStorage.getItem("tasks")) {
     tasks = JSON.parse(localStorage.getItem("tasks"));
     tasks.forEach(taskData => {
